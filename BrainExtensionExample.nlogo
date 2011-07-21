@@ -35,6 +35,40 @@ GRAPHICS-WINDOW
 ticks
 30.0
 
+BUTTON
+30
+84
+96
+117
+NIL
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+111
+88
+174
+121
+NIL
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
 @#$#@#$#@
 ## WHAT IS IT?
 

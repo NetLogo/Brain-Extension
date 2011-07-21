@@ -25,11 +25,17 @@ class BrainExtension extends DefaultClassManager {
 case class BrainConnection(host:String) {
   import java.io._
   import java.net._
-  var socket = new Socket(host, 13854) {
-    setSoTimeout(3000)
+  val port = 13854
+  var socket = new Socket()
+  println("about to connect to: " + (host, port))
+  try socket.connect(new InetSocketAddress(host, port), 3000)
+  catch {
+    case e:Exception => 
+     throw new ExtensionException("couldn't connect to " + (host, port), e)
   }
   var out = new PrintWriter(socket.getOutputStream, true)
   var in = new BufferedReader(new InputStreamReader(socket.getInputStream))
+
   def readAttention(): String = in.readLine() 
 }
 
