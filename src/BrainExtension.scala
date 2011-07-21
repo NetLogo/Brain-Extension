@@ -2,29 +2,45 @@ import org.nlogo.api._
 import org.nlogo.api.Syntax._
 import org.nlogo.api.ScalaConversions._
 
+object BrainExtension {
+  var bc: Option[BrainConnection] = None
+
+  def connect(host:String){ 
+    bc = Some(BrainConnection(host))
+  }
+
+  def readAttention(): String = bc match {
+    case Some(c) => c.readAttention()
+    case None => sys.error("not connected")
+  }
+}
+
 class BrainExtension extends DefaultClassManager {
   def load(manager: PrimitiveManager) {
-    manager.addPrimitive("first-n-integers", new IntegerList)
-    manager.addPrimitive("my-list", new MyList)
+    manager.addPrimitive("connect", new Connect)
+    manager.addPrimitive("attention", new Attention)
   }
 }
 
-class IntegerList extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(NumberType), ListType)
+case class BrainConnection(host:String) {
+  import java.io._
+  import java.net._
+  var socket = new Socket(host, 13854)
+  var out = new PrintWriter(socket.getOutputStream, true)
+  var in = new BufferedReader(new InputStreamReader(socket.getInputStream))
+  def readAttention(): String = in.readLine() 
+}
 
-  def report(args: Array[Argument], context: Context): AnyRef = {
-    val n = try {args(0).getIntValue}
-    catch {
-      case e: LogoException => throw new ExtensionException(e.getMessage)
-    }
-    if (n < 0) throw new ExtensionException("input must be positive")
-    
-    (0 until n).toLogoList
+class Connect extends DefaultCommand {
+  override def getSyntax = commandSyntax(Array(StringType))
+  def perform(args: Array[Argument], context: Context){
+    BrainExtension.connect(args(0).getString)
   }
 }
 
-class MyList extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(WildcardType | RepeatableType), ListType, 2)
-  def report(args: Array[Argument], context: Context) =
-    args.map(_.get).toLogoList
+
+class Attention extends DefaultReporter {
+  override def getSyntax = reporterSyntax(Array(), StringType)
+  def report(args: Array[Argument], context: Context): AnyRef = 
+    BrainExtension.readAttention().asInstanceOf[AnyRef]
 }
