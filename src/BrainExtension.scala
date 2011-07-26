@@ -46,7 +46,7 @@ case class BrainConnection(host:String) {
   try socket.connect(new InetSocketAddress(host, port), 3000)
   catch {
     case e:Exception => 
-     throw new ExtensionException("couldn't connect to " + (host, port), e)
+     throw new ExtensionException(new Exception("couldn't connect to " + (host, port), e))
   }
 
   @volatile var connected = true
@@ -79,7 +79,7 @@ object BrainReader{
 }
 
 class Connect extends DefaultCommand {
-  override def getSyntax = commandSyntax(Array(StringType))
+  override def getSyntax = commandSyntax(Array(TYPE_STRING))
   def perform(args: Array[Argument], context: Context){
     BrainExtension.connect(args(0).getString)
   }
@@ -93,13 +93,13 @@ class Disconnect extends DefaultCommand {
 }
 
 class Attention extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(), NumberType)
+  override def getSyntax = reporterSyntax(Array(), TYPE_NUMBER)
   def report(args: Array[Argument], context: Context): AnyRef = 
     BrainExtension.attention.toDouble.asInstanceOf[AnyRef]
 }
 
 class Meditation extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(), NumberType)
+  override def getSyntax = reporterSyntax(Array(), TYPE_NUMBER)
   def report(args: Array[Argument], context: Context): AnyRef = 
     BrainExtension.meditation.toDouble.asInstanceOf[AnyRef]
 }
