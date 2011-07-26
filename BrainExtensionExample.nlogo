@@ -1,11 +1,13 @@
 extensions [brain]
 
 to setup
-  brain:connect "129.105.244.101"
+  ca
+  brain:connect "localhost"
+  reset-ticks
 end
 
 to go
-  print brain:attention
+  tick
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -68,6 +70,25 @@ NIL
 NIL
 NIL
 1
+
+PLOT
+8
+195
+208
+345
+plot 1
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"attention" 1.0 0 -13345367 true "" "plot brain:attention"
+"meditation" 1.0 0 -2674135 true "" "plot brain:meditation"
 
 @#$#@#$#@
 ## WHAT IS IT?

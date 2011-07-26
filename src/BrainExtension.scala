@@ -1,6 +1,8 @@
 import org.nlogo.api._
 import org.nlogo.api.Syntax._
 import org.nlogo.api.ScalaConversions._
+import java.io._
+import java.net._
 
 object BrainExtension {
   var bc: Option[BrainConnection] = None
@@ -9,8 +11,22 @@ object BrainExtension {
     bc = Some(BrainConnection(host))
   }
 
-  def readAttention(): String = bc match {
-    case Some(c) => c.readAttention()
+  def disconnect(){
+    bc match {
+      case Some(c) => 
+        c.disconnect()
+        bc = None
+      case None => sys.error("not connected")
+    }
+  }
+
+  def attention: Int = bc match {
+    case Some(c) => c.attention
+    case None => sys.error("not connected")
+  }
+
+  def meditation: Int = bc match {
+    case Some(c) => c.meditation
     case None => sys.error("not connected")
   }
 }
@@ -18,26 +34,53 @@ object BrainExtension {
 class BrainExtension extends DefaultClassManager {
   def load(manager: PrimitiveManager) {
     manager.addPrimitive("connect", new Connect)
+    manager.addPrimitive("disconnect", new Disconnect)
     manager.addPrimitive("attention", new Attention)
+    manager.addPrimitive("meditation", new Meditation)
   }
 }
 
 case class BrainConnection(host:String) {
-  import java.io._
-  import java.net._
   val port = 13854
   var socket = new Socket()
-  println("about to connect to: " + (host, port))
   try socket.connect(new InetSocketAddress(host, port), 3000)
   catch {
     case e:Exception => 
      throw new ExtensionException("couldn't connect to " + (host, port), e)
   }
-  var out = new PrintWriter(socket.getOutputStream, true)
-  var in = new BufferedReader(new InputStreamReader(socket.getInputStream))
 
-  def readAttention(): String = in.readLine() 
+  @volatile var connected = true
+  @volatile var attention = 0
+  @volatile var meditation = 0
+
+  new Thread(new Runnable(){
+    def run(){
+      while(connected){
+        val (a,m) = BrainReader.read(socket.getInputStream, attention, meditation)
+	attention = a
+        meditation = m
+      } 
+    }
+  }).start()
+
+  def disconnect(){
+    connected = false
+    socket.close()
+  }
 }
+
+object BrainReader{
+  def read(in:InputStream, attention:Int, meditation:Int): (Int, Int) = {
+    val b = in.read()
+
+    println("first byte read: " + b)
+
+    if(b == 0x04) (in.read(), meditation)
+    else if(b == 0x05) (attention, in.read())
+    else (attention, meditation)
+  }
+}
+
 
 class Connect extends DefaultCommand {
   override def getSyntax = commandSyntax(Array(StringType))
@@ -46,8 +89,21 @@ class Connect extends DefaultCommand {
   }
 }
 
+class Disconnect extends DefaultCommand {
+  override def getSyntax = commandSyntax(Array())
+  def perform(args: Array[Argument], context: Context){
+    BrainExtension.disconnect()
+  }
+}
+
 class Attention extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(), StringType)
+  override def getSyntax = reporterSyntax(Array(), NumberType)
   def report(args: Array[Argument], context: Context): AnyRef = 
-    BrainExtension.readAttention().asInstanceOf[AnyRef]
+    BrainExtension.attention.toDouble.asInstanceOf[AnyRef]
+}
+
+class Meditation extends DefaultReporter {
+  override def getSyntax = reporterSyntax(Array(), NumberType)
+  def report(args: Array[Argument], context: Context): AnyRef = 
+    BrainExtension.meditation.toDouble.asInstanceOf[AnyRef]
 }
