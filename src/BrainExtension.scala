@@ -72,15 +72,11 @@ case class BrainConnection(host:String) {
 object BrainReader{
   def read(in:InputStream, attention:Int, meditation:Int): (Int, Int) = {
     val b = in.read()
-
-    println("first byte read: " + b)
-
     if(b == 0x04) (in.read(), meditation)
     else if(b == 0x05) (attention, in.read())
     else (attention, meditation)
   }
 }
-
 
 class Connect extends DefaultCommand {
   override def getSyntax = commandSyntax(Array(StringType))

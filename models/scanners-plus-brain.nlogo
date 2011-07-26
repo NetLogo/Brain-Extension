@@ -1,13 +1,44 @@
 extensions [brain]
+turtles-own [previous-meditation current-meditation agitation]
 
 to setup
   ca
+  cro 1 [ 
+    set shape "face happy" 
+    set size 5
+    set color green
+  ] 
+  ;ask turtle 0 [ set xcor xcor - 7 ]
+  ;ask turtle 1 [ set xcor xcor + 7 ]
   brain:connect "localhost"
-  reset-ticks
 end
 
-to go
-  tick
+to go 
+  ask turtles [concentrate]
+  ;if count turtles < 2 [ stop ]
+end
+
+to concentrate
+  set previous-meditation current-meditation
+  set current-meditation brain:meditation
+  
+  if current-meditation > 60 and previous-meditation != current-meditation [  
+    set agitation agitation + 1
+  ]
+  if (agitation > 50 and agitation < 75) [
+    set color orange
+    set shape "face neutral"
+  ]
+  if (agitation >= 90 and agitation < 100) [
+   set color red
+   set shape "face sad"
+  ]
+  if agitation = 100 [
+   set shape "face boom"
+   stamp
+   die 
+  ]
+  set size max (list 5 ((agitation / 10) * 1.5))
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -38,9 +69,9 @@ ticks
 30.0
 
 BUTTON
-30
+26
 84
-96
+92
 117
 NIL
 setup
@@ -55,10 +86,10 @@ NIL
 1
 
 BUTTON
-111
-88
-174
-121
+101
+84
+164
+117
 NIL
 go
 T
@@ -71,24 +102,16 @@ NIL
 NIL
 1
 
-PLOT
-8
-195
-208
-345
-plot 1
+MONITOR
+49
+261
+163
+306
 NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"attention" 1.0 0 -13345367 true "" "plot brain:attention"
-"meditation" 1.0 0 -2674135 true "" "plot brain:meditation"
+brain:meditation
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -210,6 +233,19 @@ dot
 false
 0
 Circle -7500403 true true 90 90 120
+
+face boom
+false
+0
+Polygon -7500403 true true 30 90 15 45 60 45 0 0 75 30 105 0 105 15 135 0 150 15 180 0 195 15 225 0 225 45 300 15 270 75 300 75 285 90 300 120 285 120 300 165 285 195 300 225 255 225 285 270 225 270 210 300 210 285 165 300 165 285 105 300 120 285 45 300 60 270 15 270 30 240 30 210 0 210 30 195 0 180 30 165 0 120 30 120 0 90 30 90 30 60 45 60 45 45
+Circle -7500403 true true 8 8 285
+Circle -16777216 true false 60 75 60
+Circle -16777216 true false 180 75 60
+Polygon -16777216 true false 150 168 90 184 62 210 47 232 67 244 90 220 109 205 150 198 192 205 210 220 227 242 251 229 236 206 212 183
+Line -7500403 true 60 90 120 135
+Line -7500403 true 75 135 120 75
+Line -7500403 true 180 90 255 135
+Line -7500403 true 195 135 240 75
 
 face happy
 false
