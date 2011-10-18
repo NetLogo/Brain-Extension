@@ -86,20 +86,20 @@ class Connect extends DefaultCommand {
 }
 
 class Disconnect extends DefaultCommand {
-  override def getSyntax = commandSyntax(Array())
+  override def getSyntax = commandSyntax(Array[Int]())
   def perform(args: Array[Argument], context: Context){
     BrainExtension.disconnect()
   }
 }
 
 class Attention extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(), NumberType)
+  override def getSyntax = reporterSyntax(Array[Int](), NumberType)
   def report(args: Array[Argument], context: Context): AnyRef = 
     BrainExtension.attention.toDouble.asInstanceOf[AnyRef]
 }
 
 class Meditation extends DefaultReporter {
-  override def getSyntax = reporterSyntax(Array(), NumberType)
+  override def getSyntax = reporterSyntax(Array[Int](), NumberType)
   def report(args: Array[Argument], context: Context): AnyRef = 
     BrainExtension.meditation.toDouble.asInstanceOf[AnyRef]
 }
